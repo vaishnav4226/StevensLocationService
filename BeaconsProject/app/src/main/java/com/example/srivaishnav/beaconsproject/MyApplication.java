@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
@@ -35,6 +36,9 @@ public class MyApplication extends Application {
     @Override
     public void onCreate(){
         super.onCreate();
+//        TextView schedule = (TextView) findViewById(R.id.schedule);
+//        schedule.setText(beaconsJsonStr);
+
         beaconManager = new BeaconManager(getApplicationContext());
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
@@ -48,6 +52,8 @@ public class MyApplication extends Application {
         Log.v("Test message", "to check");
         FetchBeaconTask beaconTask = new FetchBeaconTask();
         beaconTask.execute();
+
+
     }
 
     public void showNotification(String title, String message){
@@ -115,7 +121,7 @@ public class MyApplication extends Application {
         @Override
         protected String[] doInBackground(String... params) {
             currentBeacons = new ArrayList<Beacons>();
-
+            String BEACONS_BASE_URL;
 
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
@@ -129,8 +135,18 @@ public class MyApplication extends Application {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
-                final String BEACONS_BASE_URL =
-                        "http://155.246.204.140:3000/api/buildings/10/floors/04/beacons";
+                if (params.length == 0) {
+
+                     BEACONS_BASE_URL =
+                            "http://155.246.204.140:3000/api/buildings/10/floors/04/beacons";
+
+                }
+                else{
+                     BEACONS_BASE_URL =
+                            "http://155.246.204.140:3000/api/buildings/10/floors/04/beacons/"+params[0];}
+//                final String BEACONS_BASE_URL =
+//                        "http://155.246.204.140:3000/api/buildings/10/floors/04/beacons";
+
 
                 Uri builtUri = Uri.parse(BEACONS_BASE_URL).buildUpon()
                         .build();
@@ -167,6 +183,7 @@ public class MyApplication extends Application {
                 }
                 beaconsJsonStr = buffer.toString();
 
+
                 Log.v(LOG_TAG, "Beacon string: " + beaconsJsonStr);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -185,9 +202,19 @@ public class MyApplication extends Application {
                     }
                 }
             }
+//
+//            if(params.length != 0){
+//                Intent intent = new Intent();
+//                intent.setClass(getApplicationContext(), MainActivity.class);
+//                startActivity(intent);
+//            }
+
 
             try {
-                getBeaconDataFromJson(beaconsJsonStr);
+                if(params.length ==0) {
+                    getBeaconDataFromJson(beaconsJsonStr);
+                }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -196,5 +223,7 @@ public class MyApplication extends Application {
             return null;
         }
     }
+
+
 
 }
