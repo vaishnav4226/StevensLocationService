@@ -8,8 +8,23 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
+
+    String testSchdule = "m, nov 2\n" +
+            "1230 Lockheed Martin Virtual LM\n" +
+            "\n" +
+            "t, nov 3\n" +
+            "SSE Board of Visitors\n" +
+            "\n" +
+            "w, nov 4\n" +
+            "1100 virtual LM\n" +
+            "1130 690 Beacon\n" +
+            "1200 690 crowds\n" +
+            "1230 690 limo\n" +
+            "1400 bitcoin talk\n" +
+            "1400 SESWE staff mtg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        TextView schedule = (TextView) findViewById(R.id.schedule);
+        schedule.setText(testSchdule);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -131,7 +130,7 @@ public class MyApplication extends Application {
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
                 final String BEACONS_BASE_URL =
-                        "http://155.246.141.29:3000/api/buildings/10/floors/04/beacons";
+                        "http://155.246.204.140:3000/api/buildings/10/floors/04/beacons";
 
                 Uri builtUri = Uri.parse(BEACONS_BASE_URL).buildUpon()
                         .build();
