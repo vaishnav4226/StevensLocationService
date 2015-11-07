@@ -43,4 +43,5 @@
         android:src="@android:drawable/ic_dialog_email"
         android:visibility="invisible" />
 
+
 </android.support.design.widget.CoordinatorLayout>
