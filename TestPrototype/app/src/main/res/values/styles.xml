@@ -1,0 +1,12 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light">
+        <!-- Customize your theme here. -->
+    </style>
+    <style name="ButtonTheme">
+        <!-- Themes for the normal buttons used in the app-->
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:background">#3F51B5</item>
+    </style>
+</resources>

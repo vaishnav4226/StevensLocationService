@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.android.testprototype.Register">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to iBeacons"
+        android:textSize="34dp"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+    <EditText
+        android:id="@+id/email_address"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Student ID"
+        android:inputType="number"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="24dp" />
+
+    <EditText
+        android:id="@+id/enter_password"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Set Password"
+        android:inputType="number"
+        android:layout_below="@+id/email_address"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="18dp" />
+    <EditText
+        android:id="@+id/confirm_password"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="Confirm Password"
+        android:inputType="number"
+        android:layout_below="@+id/enter_password"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="18dp" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:id="@+id/button"
+        android:layout_marginTop="18dp"
+        android:layout_below="@+id/confirm_password"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:background="#9E9E9E"
+        android:textColor="#FFFFFF"
+        android:onClick="signup"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+
+
+        android:text="--------------------------  OR  --------------------------"
+        android:id="@+id/textView3"
+        android:layout_marginTop="18dp"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="47dp"
+        android:paddingRight="47dp"
+        android:text="Facebook"
+        android:textColor="#FFFFFF"
+        android:id="@+id/button2"
+        android:layout_below="@+id/textView3"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="37dp"
+        android:background="#3F51B5" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="47dp"
+        android:paddingRight="47dp"
+        android:text="Google"
+        android:textColor="#FFFFFF"
+        android:id="@+id/button3"
+        android:layout_alignBottom="@+id/button2"
+        android:layout_alignEnd="@+id/button"
+        android:background="#FF5722" />
+
+</RelativeLayout>
