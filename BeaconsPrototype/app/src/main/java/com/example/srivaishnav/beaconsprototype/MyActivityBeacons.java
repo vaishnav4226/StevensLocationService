@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -22,7 +21,6 @@ import android.support.v7.app.AlertDialog;
 
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
@@ -38,19 +36,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.jiahuan.svgmapview.SVGMapView;
 import com.jiahuan.svgmapview.SVGMapViewListener;
 import com.jiahuan.svgmapview.overlay.SVGMapLocationOverlay;
+
 import helper.AssetsHelper;
 
 public class MyActivityBeacons extends AppCompatActivity {
 
     private BeaconManager beaconManager;
-    ArrayList<Beacons> currentBeacons = new ArrayList<>();
+    Map<String, BeaconData> currentBeacons = new HashMap<>();
     Beacon rightBeacon = null;
     FetchBeaconTask beaconTask = null;
 
@@ -59,7 +60,6 @@ public class MyActivityBeacons extends AppCompatActivity {
     private static String HostIpAddress;
     private final String TAG = MainActivity.class.getSimpleName();
     private com.estimote.sdk.Region ALL_ESTIMOTE_BEACONS = new com.estimote.sdk.Region("Altofer-4th", null, null, null);
-
 
 
     //Layout
@@ -113,21 +113,21 @@ public class MyActivityBeacons extends AppCompatActivity {
 
 
         // initialize host
-        HostIpAddress= getString(R.string.host_Address);
+        HostIpAddress = getString(R.string.host_Address);
 
 
         // Android M Permission check 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("This app needs location access");
                 builder.setMessage("Please grant location access so this app can detect beacons.");
                 builder.setPositiveButton(android.R.string.ok, null);
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener(){
-                  @Override
-                  public void onDismiss(DialogInterface dialog){
-                      requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},PERMISSION_REQUEST_COARSE_LOCATION);
-                  }
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+                    }
                 });
                 builder.show();
             }
@@ -139,21 +139,26 @@ public class MyActivityBeacons extends AppCompatActivity {
             public void onBeaconsDiscovered(Region region, List<Beacon> Beacons) {
 
                 if (Beacons.size() != 0) {
-                    if ((currentBeacons.size() == 0 && beaconTask == null) || (currentBeacons.size() != 0 && Integer.parseInt(currentBeacons.get(0).beaconId.substring(0, 4)) != Beacons.get(0).getMajor())) {
+                    if ((currentBeacons.size() == 0 && beaconTask == null) || (currentBeacons.size() != 0 && Integer.parseInt(currentBeacons.get(new ArrayList<String>(currentBeacons.keySet()).get(0)).beaconId.substring(0, 4)) != Beacons.get(0).getMajor())) {
 
                         beaconTask = new FetchBeaconTask();
                         beaconTask.execute(Integer.toString(Beacons.get(0).getMajor()));
 
-                    } else {
+                    } else if (currentBeacons.size() != 0) {
                         if (Beacons.get(0).getRssi() > (-72)) {
                             Log.v("Test:--------", "reach -72");
                             if (rightBeacon == null || Beacons.get(0).getMinor() != rightBeacon.getMinor()) {
                                 Log.v("Test:--------", "reach showbutton");
                                 rightBeacon = Beacons.get(0);
-                                String url = "http://" + HostIpAddress + "/api/buildings/" + Integer.toString(rightBeacon.getMajor()).substring(0, 2) + "/floors/" + Integer.toString(rightBeacon.getMajor()).substring(2) + "/offices/" + Integer.toString(rightBeacon.getMinor());
                                 //Log.v("Look at here--------", url);
-                                showButton(url);
-                                render(900, 1000, 0);
+                                BeaconData beaconData = currentBeacons.get(Integer.toString(rightBeacon.getMajor()) + Integer.toString(rightBeacon.getMinor()));
+                                if (beaconData.trigger) {
+                                    String url = "http://" + HostIpAddress + "/api/buildings/" + Integer.toString(rightBeacon.getMajor()).substring(0, 2) + "/floors/" + Integer.toString(rightBeacon.getMajor()).substring(2) + "/offices/" + Integer.toString(rightBeacon.getMinor());
+                                    showButton(url);
+                                } else {
+                                    hideButton();
+                                }
+                                render(beaconData.coordinateX, beaconData.coordinateY, 0);
                             }
 
                         } else {
@@ -199,15 +204,15 @@ public class MyActivityBeacons extends AppCompatActivity {
 
     public void showButton(String passedUrl) {
         final String url4WebView = passedUrl;
-        final String url4Message =passedUrl+"/messages";
+        final String url4Message = passedUrl + "/messages";
         mapView.getController().setRotationGestureEnabled(false);
         mapView.getController().setScrollGestureEnabled(false);
         //show button "Message"
         buttonMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent =new Intent(getApplication(),MessageActivity.class);
-                intent.putExtra("url",url4Message);
+                Intent intent = new Intent(getApplication(), MessageActivity.class);
+                intent.putExtra("url", url4Message);
                 startActivity(intent);
             }
 
@@ -236,9 +241,10 @@ public class MyActivityBeacons extends AppCompatActivity {
                 throws JSONException {
 
             // These are the names of the JSON objects that need to be extracted.
-            final String OWM_BEACONS="beacons";
+            final String OWM_BEACONS = "beacons";
             final String OWM_BEACONID = "beaconId";
-            final String OWM_COORDINATE = "coordinate";
+            final String OWM_COORDINATEX = "coordinateX";
+            final String OWM_COORDINATEY = "coordinateY";
             final String OWM_TRIGGER = "trigger";
 
 
@@ -247,25 +253,27 @@ public class MyActivityBeacons extends AppCompatActivity {
 
             for (int i = 0; i < beaconsArray.length(); i++) {
                 String beaconID;
-                String coordinate;
+                int coordinateX;
+                int coordinateY;
                 boolean trigger;
 
                 // Get the JSON object
                 JSONObject beacon = beaconsArray.getJSONObject(i);
                 beaconID = beacon.getString(OWM_BEACONID);
-                coordinate = beacon.getString(OWM_COORDINATE);
+                coordinateX = beacon.getInt(OWM_COORDINATEX);
+                coordinateY = beacon.getInt(OWM_COORDINATEY);
                 trigger = beacon.getBoolean(OWM_TRIGGER);
 
-                Beacons beaconObj = new Beacons(beaconID, coordinate, trigger);
-                currentBeacons.add(beaconObj);
+                BeaconData beaconObj = new BeaconData(beaconID, coordinateX, coordinateY, trigger);
+                currentBeacons.put(beaconID, beaconObj);
             }
 
         }
 
         @Override
         protected String[] doInBackground(String... params) {
-            // empty currentBeacons Array
-            currentBeacons = new ArrayList<>();
+            // empty currentBeacons Hashmap
+            currentBeacons = new HashMap();
 
             String BEACONS_BASE_URL;
             HttpURLConnection urlConnection = null;
@@ -275,7 +283,7 @@ public class MyActivityBeacons extends AppCompatActivity {
 
             try {
                 BEACONS_BASE_URL =
-                        "http://"+HostIpAddress+"/api/buildings/" + params[0].substring(0, 2) + "/floors/"
+                        "http://" + HostIpAddress + "/api/buildings/" + params[0].substring(0, 2) + "/floors/"
                                 + params[0].substring(2) + "/beacons";
 
 
@@ -338,7 +346,6 @@ public class MyActivityBeacons extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            Log.v("beaconId:", currentBeacons.get(0).beaconId);
             // This will only happen if there was an error getting or parsing the forecast.
             return null;
         }
