@@ -8,22 +8,25 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AlertDialog;
 
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
-import com.jiahuan.svgmapview.SVGMapView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +42,9 @@ import java.util.ArrayList;
 
 import java.util.List;
 
-
 import com.jiahuan.svgmapview.SVGMapView;
+import com.jiahuan.svgmapview.SVGMapViewListener;
+import com.jiahuan.svgmapview.overlay.SVGMapLocationOverlay;
 import helper.AssetsHelper;
 
 public class MyActivityBeacons extends AppCompatActivity {
@@ -48,6 +52,7 @@ public class MyActivityBeacons extends AppCompatActivity {
     private BeaconManager beaconManager;
     ArrayList<Beacons> currentBeacons = new ArrayList<>();
     Beacon rightBeacon = null;
+    FetchBeaconTask beaconTask = null;
 
     // static data
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
@@ -69,8 +74,43 @@ public class MyActivityBeacons extends AppCompatActivity {
         // initialize layout
         buttonMessage = (FloatingActionButton) findViewById(R.id.fab);
         buttonBrowser = (FloatingActionButton) findViewById(R.id.fab1);
+        //load map and set options
         mapView = (SVGMapView) findViewById(R.id.location_mapview);
-        mapView.loadMap(AssetsHelper.getContent(this, "floor-plan-text.svg"));
+        mapView.registerMapViewListener(new SVGMapViewListener() {
+            @Override
+            public void onMapLoadComplete() {
+                MyActivityBeacons.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mapView.getController().setRotationGestureEnabled(false);
+                        mapView.getController().setScrollGestureEnabled(false);
+                        //Toast.makeText(MyActivityBeacons.this, "onMapLoadComplete", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onMapLoadError() {
+                MyActivityBeacons.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Toast.makeText(MyActivityBeacons.this, "onMapLoadError", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onGetCurrentMap(Bitmap bitmap) {
+                MyActivityBeacons.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Toast.makeText(MyActivityBeacons.this, "onGetCurrentMap", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+        mapView.loadMap(AssetsHelper.getContent(this, "floor-plan.svg"));
+
 
         // initialize host
         HostIpAddress= getString(R.string.host_Address);
@@ -99,24 +139,29 @@ public class MyActivityBeacons extends AppCompatActivity {
             public void onBeaconsDiscovered(Region region, List<Beacon> Beacons) {
 
                 if (Beacons.size() != 0) {
-                    if (currentBeacons.size() == 0 || (currentBeacons.size() != 0 && Integer.parseInt(currentBeacons.get(0).beaconId.substring(0, 4)) != Beacons.get(0).getMajor())) {
+                    if ((currentBeacons.size() == 0 && beaconTask == null) || (currentBeacons.size() != 0 && Integer.parseInt(currentBeacons.get(0).beaconId.substring(0, 4)) != Beacons.get(0).getMajor())) {
 
-                        Log.v(TAG, "this not fun1");
-
-                        FetchBeaconTask beaconTask = new FetchBeaconTask();
+                        beaconTask = new FetchBeaconTask();
                         beaconTask.execute(Integer.toString(Beacons.get(0).getMajor()));
 
-                    } else if (rightBeacon == null || (Beacons.get(0).getRssi() > (-72) && Beacons.get(0).getMinor() != rightBeacon.getMinor())) {
+                    } else {
+                        if (Beacons.get(0).getRssi() > (-72)) {
+                            Log.v("Test:--------", "reach -72");
+                            if (rightBeacon == null || Beacons.get(0).getMinor() != rightBeacon.getMinor()) {
+                                Log.v("Test:--------", "reach showbutton");
+                                rightBeacon = Beacons.get(0);
+                                String url = "http://" + HostIpAddress + "/api/buildings/" + Integer.toString(rightBeacon.getMajor()).substring(0, 2) + "/floors/" + Integer.toString(rightBeacon.getMajor()).substring(2) + "/offices/" + Integer.toString(rightBeacon.getMinor());
+                                //Log.v("Look at here--------", url);
+                                showButton(url);
+                                render(900, 1000, 0);
+                            }
 
-                        Log.v(TAG, "this fun2");
+                        } else {
+                            Log.v("Test:--------", "reach hidebutton");
+                            rightBeacon = null;
+                            hideButton();
+                        }
 
-                        rightBeacon = Beacons.get(0);
-                        hideButton();
-
-
-                        String url = "http://"+HostIpAddress+"/api/buildings/" + Integer.toString(rightBeacon.getMajor()).substring(0, 2) + "/floors/" + Integer.toString(rightBeacon.getMajor()).substring(2) + "/offices/" + Integer.toString(rightBeacon.getMinor());
-                        Log.v("Look at here--------", url);
-                        showButton(url);
 
                     }
 
@@ -130,6 +175,7 @@ public class MyActivityBeacons extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mapView.onResume();
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
@@ -141,6 +187,7 @@ public class MyActivityBeacons extends AppCompatActivity {
     @Override
     protected void onPause() {
         beaconManager.stopRanging(ALL_ESTIMOTE_BEACONS);
+        mapView.onPause();
         super.onPause();
     }
 
@@ -153,7 +200,8 @@ public class MyActivityBeacons extends AppCompatActivity {
     public void showButton(String passedUrl) {
         final String url4WebView = passedUrl;
         final String url4Message =passedUrl+"/messages";
-
+        mapView.getController().setRotationGestureEnabled(false);
+        mapView.getController().setScrollGestureEnabled(false);
         //show button "Message"
         buttonMessage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,7 +265,7 @@ public class MyActivityBeacons extends AppCompatActivity {
         @Override
         protected String[] doInBackground(String... params) {
             // empty currentBeacons Array
-            currentBeacons = new ArrayList<Beacons>();
+            currentBeacons = new ArrayList<>();
 
             String BEACONS_BASE_URL;
             HttpURLConnection urlConnection = null;
@@ -337,8 +385,22 @@ public class MyActivityBeacons extends AppCompatActivity {
                     });
                     builder.show();
                 }
-                return;
             }
         }
+    }
+
+    private void render(int x, int y, int direction) {
+        if (mapView.getOverLays().size() > 1) {
+            mapView.getOverLays().remove(1);
+        }
+
+        SVGMapLocationOverlay locationOverlay = new SVGMapLocationOverlay(mapView);
+        locationOverlay.setIndicatorArrowBitmap(BitmapFactory.decodeResource(getResources(), R.mipmap.indicator_arrow));
+        locationOverlay.setPosition(new PointF(x, y));
+        locationOverlay.setIndicatorCircleRotateDegree(90);
+        locationOverlay.setMode(SVGMapLocationOverlay.MODE_COMPASS);
+        locationOverlay.setIndicatorArrowRotateDegree(direction);
+        mapView.getOverLays().add(locationOverlay);
+        mapView.refresh();
     }
 }
