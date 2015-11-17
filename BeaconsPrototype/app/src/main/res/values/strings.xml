@@ -5,7 +5,7 @@
     <string name="title_activity_detect_beacons">DetectBeacons</string>
     <string name="title_activity_message_board">MessageBoard</string>
     <string name="title_activity_message">MessageActivity</string>
-    <string name="host_Address">155.246.204.159:3000</string>
+    <string name="host_Address">155.246.204.117:3000</string>
     <string name="Message_Send_Button">Send</string>
     <string name="title_activity_maps">Map</string>
 </resources>

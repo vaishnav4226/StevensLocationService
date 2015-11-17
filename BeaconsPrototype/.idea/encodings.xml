@@ -3,7 +3,6 @@
   <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false">
     <file url="file://$PROJECT_DIR$/SVG" charset="windows-1252" />
     <file url="file://$PROJECT_DIR$/app/src/main/assets" charset="windows-1252" />
-    <file url="file://$PROJECT_DIR$/app/src/main/assets/floor_plan_text_tset.svg" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/src/main/java/helper/AssetsHelper.java" charset="windows-1252" />
     <file url="file://$PROJECT_DIR$/app/src/main/res/mipmap-xxhdpi/indicator_arrow.png" charset="windows-1252" />
     <file url="PROJECT" charset="UTF-8" />

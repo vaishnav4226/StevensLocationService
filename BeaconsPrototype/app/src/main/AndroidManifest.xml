@@ -44,7 +44,7 @@
         <activity android:name=".WebView_Activity" >
         </activity>
         <activity
-            android:name=".MessageActivity"
+            android:name=".ChatActivity"
             android:label="@string/title_activity_message"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
@@ -60,10 +60,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" >
-        </activity>
     </application>
 
 </manifest>

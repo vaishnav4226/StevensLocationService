@@ -211,7 +211,7 @@ public class MyActivityBeacons extends AppCompatActivity {
         buttonMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplication(), MessageActivity.class);
+                Intent intent = new Intent(getApplication(), ChatActivity.class);
                 intent.putExtra("url", url4Message);
                 startActivity(intent);
             }
