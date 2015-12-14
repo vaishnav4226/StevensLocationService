@@ -59,7 +59,7 @@ public class SVGMapLocationOverlay extends SVGMapBaseOverlay
         locationPaint.setColor(DEFAULT_LOCATION_COLOR);
         locationPaint.setShadowLayer(5, 3, 3, DEFAULT_LOCATION_SHADOW_COLOR);
         //
-        defaultLocationCircleRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, svgMapView.getResources().getDisplayMetrics());
+        defaultLocationCircleRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6, svgMapView.getResources().getDisplayMetrics());
         //
         compassRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38, svgMapView.getResources().getDisplayMetrics());
         compassLocationCircleRadius = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 0.5f, svgMapView.getResources().getDisplayMetrics());

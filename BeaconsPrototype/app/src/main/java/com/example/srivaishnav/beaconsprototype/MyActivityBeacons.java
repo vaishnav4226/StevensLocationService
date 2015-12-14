@@ -138,7 +138,7 @@ public class MyActivityBeacons extends AppCompatActivity {
             @Override
             public void onBeaconsDiscovered(Region region, List<Beacon> Beacons) {
 
-                if (Beacons.size() != 0) {
+                if (Beacons.size() != 0&&(Beacons.get(0).getMajor())>1000&&(Beacons.get(0).getMajor())>100) {
                     if ((currentBeacons.size() == 0 && beaconTask == null) || (currentBeacons.size() != 0 && Integer.parseInt(currentBeacons.get(new ArrayList<String>(currentBeacons.keySet()).get(0)).beaconId.substring(0, 4)) != Beacons.get(0).getMajor())) {
 
                         beaconTask = new FetchBeaconTask();

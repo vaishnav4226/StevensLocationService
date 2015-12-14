@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,6 +47,7 @@ public class ChatActivity extends ActionBarActivity {
     private ChatAdapter adapter;
     private ArrayList<ChatMessage> chatHistory;
 
+    private Boolean DATALOADEDFALG=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,8 +87,12 @@ public class ChatActivity extends ActionBarActivity {
         TextView meLabel = (TextView) findViewById(R.id.meLbl);
         TextView companionLabel = (TextView) findViewById(R.id.friendLabel);
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-        companionLabel.setText("My Buddy");
+        //companionLabel.setText("My Buddy");
 
+        chatHistory = new ArrayList<ChatMessage>();
+        //set adapter
+        adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
+        messagesContainer.setAdapter(adapter);
 
         // get data from server
         Bundle bundle = getIntent().getExtras();
@@ -94,7 +100,7 @@ public class ChatActivity extends ActionBarActivity {
         FetchMessageTask messageTask = new FetchMessageTask();
         messageTask.execute(MESSAGES_BASE_URL);
 
-        loadDummyHistory();
+
 
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +111,7 @@ public class ChatActivity extends ActionBarActivity {
                 }
 
                 ChatMessage chatMessage = new ChatMessage();
-                chatMessage.setId(122);//dummy
+                chatMessage.setId("Prof.Vesonder");
                 chatMessage.setMessage(messageText);
                 chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
                 chatMessage.setMe(true);
@@ -116,11 +122,13 @@ public class ChatActivity extends ActionBarActivity {
 
                 //Post message
                 PostMessageTask messageTask = new PostMessageTask();
-                messageTask.execute(MESSAGES_BASE_URL,messageText);
+                messageTask.execute(MESSAGES_BASE_URL, messageText, "Prof.Vesonder");
             }
         });
 
+        while(!DATALOADEDFALG){}
 
+        loadDummyHistory();
     }
 
     public void displayMessage(ChatMessage message) {
@@ -135,23 +143,23 @@ public class ChatActivity extends ActionBarActivity {
 
     private void loadDummyHistory(){
 
-        chatHistory = new ArrayList<ChatMessage>();
-
-        ChatMessage msg = new ChatMessage();
-        msg.setId(1);
-        msg.setMe(false);
-        msg.setMessage("Hi");
-        msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-        chatHistory.add(msg);
-        ChatMessage msg1 = new ChatMessage();
-        msg1.setId(2);
-        msg1.setMe(false);
-        msg1.setMessage("How r u doing???");
-        msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-        chatHistory.add(msg1);
-
-        adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
-        messagesContainer.setAdapter(adapter);
+//        chatHistory = new ArrayList<ChatMessage>();
+//
+//        ChatMessage msg = new ChatMessage();
+//        msg.setId("Me");
+//        msg.setMe(false);
+//        msg.setMessage("What is your office hour?");
+//        msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+//        chatHistory.add(msg);
+//        ChatMessage msg1 = new ChatMessage();
+//        msg1.setId("Others");
+//        msg1.setMe(false);
+//        msg1.setMessage("When will you be in the office???");
+//        msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+//        chatHistory.add(msg1);
+//
+//        adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
+//        messagesContainer.setAdapter(adapter);
 
                 for(int i=0; i<chatHistory.size(); i++) {
                     ChatMessage message = chatHistory.get(i);
@@ -161,11 +169,27 @@ public class ChatActivity extends ActionBarActivity {
     }
     public class PostMessageTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = PostMessageTask.class.getSimpleName();
+        private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
+            StringBuilder result = new StringBuilder();
+            boolean first = true;
+            for(Map.Entry<String, String> entry : params.entrySet()){
+                if (first)
+                    first = false;
+                else
+                    result.append("&");
 
+                result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                result.append("=");
+                result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+            }
+
+            return result.toString();
+        }
 
         @Override
         protected String[] doInBackground(String... params) {
             String content;
+            String sender;
             String MESSAGES_BASE_URL;
             HttpURLConnection urlConnection = null;
 
@@ -173,6 +197,7 @@ public class ChatActivity extends ActionBarActivity {
             try {
                 MESSAGES_BASE_URL = params[0];
                 content=params[1];
+                sender=params[2];
 
                 Uri builtUri = Uri.parse(MESSAGES_BASE_URL).buildUpon()
                         .build();
@@ -194,7 +219,7 @@ public class ChatActivity extends ActionBarActivity {
                 HashMap data = new HashMap();
                 // Put elements to the map
                 data.put("content",content);
-                data.put("sender", "Gregg");
+                data.put("sender", sender);
                 data.put("date", Long.toString(Calendar.getInstance().getTimeInMillis()));
 
                 writer.write(getPostDataString(data));
@@ -222,22 +247,6 @@ public class ChatActivity extends ActionBarActivity {
         }
     }
 
-    private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for(Map.Entry<String, String> entry : params.entrySet()){
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-        }
-
-        return result.toString();
-    }
 
     public class FetchMessageTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = FetchMessageTask.class.getSimpleName();
@@ -265,9 +274,23 @@ public class ChatActivity extends ActionBarActivity {
                 sender = message.getString(OWM_SENDER);
                 content = message.getString(OWM_CONTENT);
                 date = message.getString(OWM_DATE);
-                Log.v("JSON",sender);
-            }
+                Log.v("JSON", sender);
 
+                ChatMessage msg = new ChatMessage();
+           msg.setId(sender);
+           msg.setMe(false);
+           msg.setMessage(content);
+
+
+//
+//                Calendar calendar = Calendar.getInstance();
+//                calendar.setTimeInMillis(Long.parseLong(date));
+//                new SimpleDateFormat("dd/MM/yyyy hh:mm:ss").format(calendar.getTime());
+
+           msg.setDate(DateFormat.getDateTimeInstance().format(new Date(Long.parseLong(date))));
+           chatHistory.add(msg);
+            }
+            DATALOADEDFALG=true;
         }
 
         @Override

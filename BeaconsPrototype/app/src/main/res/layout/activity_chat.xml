@@ -48,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left|center_vertical"
-            android:text="MySelf"
+            android:text="Me"
             android:singleLine="false"
             android:textSize="20dp" />
 
@@ -57,7 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text="Friend"
+            android:text="Others"
             android:textSize="20dp" />
 
 
